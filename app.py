@@ -1,8 +1,17 @@
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
 from pymongo import MongoClient
 
-client = MongoClient('mongodb+srv://ajengadiar1:sparta@cluster0.1xoa3iw.mongodb.net/?retryWrites=true&w=majority')
-db = client.dbsparta
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
+MONGODB_URI = os.environ.get("MONGODB_URI")
+DB_NAME = os.environ.get("DB_NAME")
+
+client = MongoClient(MONGODB_URI)
+db = client[DB_NAME]
 
 app = Flask(__name__)
 
@@ -16,8 +25,8 @@ def bucket_post():
     count = db.bucket.count_documents({})
     num = count + 1
     doc = {
-        'num': num, 
-        'bucket': bucket_recive, 
+        'num': num,
+        'bucket': bucket_recive,
         'done': 0
     }
     db.bucket.insert_one(doc)
@@ -50,7 +59,6 @@ def delete_item():
         return jsonify({'msg': f'Error: Item with num {num} not found'}), 404
 
     return jsonify({'msg': f'Item with num {num} deleted successfully'})
-
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=True)
